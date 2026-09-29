@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Go · Paradigmas de Programação</title>
+  <link rel="stylesheet" href="lib/reveal.js/dist/reset.css">
+  <link rel="stylesheet" href="lib/reveal.js/dist/reveal.css">
+  <link rel="stylesheet" href="lib/reveal.js/dist/theme/black.css">
+  <link rel="stylesheet" href="lib/reveal.js/dist/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="tema.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================== CAPA ===================== -->
+<section class="capa">
+  <p class="kicker">Paradigmas de Programação · UFES · 2026/2</p>
+  <h1>Go</h1>
+  <p class="sub">A linguagem que o Google criou enquanto esperava o C++ compilar</p>
+  <p class="autores">Nome 1 · Nome 2</p>
+  <p class="prof">Prof. Bruno Légora</p>
+</section>
+
+<section>
+  <h2>Roteiro</h2>
+  <ol class="roteiro">
+    <li><b>Contexto e histórico</b><span>os problemas que motivaram Go e quem a criou</span><em>~3 min</em></li>
+    <li><b>Casos de uso</b><span>os projetos conhecidos que são escritos em Go</span><em>~3 min</em></li>
+    <li><b>Avaliação de critérios</b><span>de aplicabilidade a custo</span><em>~10 min</em></li>
+    <li><b>Avaliações teóricas</b><span>escopo, tipos, memória, polimorfismo, concorrência, erros</span><em>~14 min</em></li>
+  </ol>
+</section>
+
+<!-- ===================== PARTE 1 ===================== -->
+<section class="secao">
+  <p class="kicker">Parte 1</p>
+  <h2>Contexto e histórico</h2>
+</section>
+
+<section>
+  <h2>Dois problemas no Google de 2007</h2>
+  <div class="cols">
+    <div>
+      <p class="titulo-lista">Compilação lenta de C++</p>
+      <ul class="media">
+        <li>Programas de milhões de linhas levavam dezenas de minutos para compilar, mesmo num cluster de compilação</li>
+        <li>O vilão era o <code>#include</code>: cada arquivo reabre e reprocessa os mesmos headers, e o custo cresce com o projeto</li>
+      </ul>
+      <p class="titulo-lista">Concorrência difícil</p>
+      <ul class="media">
+        <li>Os servidores atendiam milhares de conexões ao mesmo tempo, em máquinas com vários núcleos</li>
+        <li>Em C++ e Java isso significava threads do sistema operacional com locks, caras de criar e fáceis de errar</li>
+      </ul>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Como a ideia surgiu</p>
+      <p>Rob Pike conta que a conversa que deu origem a Go aconteceu em setembro de 2007, durante um build de C++ de uns 45 minutos.</p>
+      <p>Queriam uma linguagem que compilasse em segundos, que equipes grandes conseguissem ler e que tivesse concorrência na própria sintaxe.</p>
+      <p class="fonte">PIKE, "Less is exponentially more", 2012 · PIKE, "Go at Google", 2012</p>
+    </div>
+  </div>
+  <aside class="notes">A resposta de Go para a compilação: sem headers, cada pacote declara explicitamente o que importa, e importar algo sem usar é erro de compilação. O grafo de dependências fica pequeno e acíclico. A resposta para concorrência vem na parte de concorrência: goroutines e canais.</aside>
+</section>
+
+<section>
+  <h2>Os três fundadores</h2>
+  <div class="pessoas">
+    <div class="pessoa"><b>Robert Griesemer</b><p>Trabalhou na máquina virtual Java HotSpot e no motor JavaScript V8 do Chrome</p></div>
+    <div class="pessoa"><b>Rob Pike</b><p>Esteve na equipe do Unix e do Plan 9 nos Bell Labs e é coautor do UTF-8</p></div>
+    <div class="pessoa"><b>Ken Thompson</b><p>Criou o Unix e a linguagem B, que deu origem ao C. Coautor do UTF-8, ganhou o prêmio Turing em 1983</p></div>
+  </div>
+  <div class="linha-tempo">
+    <div><b>2007</b><span>projeto começa no Google</span></div>
+    <div><b>2009</b><span>código aberto</span></div>
+    <div><b>2012</b><span>Go 1.0 e promessa de compatibilidade</span></div>
+    <div><b>2022</b><span>Go 1.18 traz genéricos</span></div>
+    <div><b>hoje</b><span>duas versões por ano</span></div>
+  </div>
+  <aside class="notes">A herança de C aparece em toda a linguagem, o que faz sentido: Thompson escreveu o B, que virou C. Dois dos três fizeram o UTF-8, e isso explica por que strings em Go são UTF-8 desde o primeiro dia.</aside>
+</section>
+
+<!-- ===================== PARTE 2 ===================== -->
+<section class="secao">
+  <p class="kicker">Parte 2</p>
+  <h2>Casos de uso</h2>
+  <p class="sub">Se você usa Docker ou Kubernetes, já roda código Go todo dia</p>
+</section>
+
+<section>
+  <h2>Contêineres e orquestração</h2>
+  <div class="cols">
+    <div>
+      <ul class="media">
+        <li><b>Docker</b>, com o <code>containerd</code> e o <code>runc</code> por baixo, que são os programas que de fato criam os contêineres</li>
+        <li><b>Kubernetes</b>, o orquestrador de contêineres que o próprio Google abriu em 2014</li>
+        <li><b>etcd</b>, o banco chave-valor onde o Kubernetes guarda o estado do cluster</li>
+        <li><b>Helm</b>, o gerenciador de pacotes do Kubernetes</li>
+        <li><b>Istio</b> (plano de controle), para redes de serviços</li>
+      </ul>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que Go aqui?</p>
+      <p>Um contêiner precisa de um binário que rode sem instalar nada. Go gera um executável estático, que basta copiar para a imagem.</p>
+      <p>Orquestrar milhares de contêineres é, na prática, manter milhares de conexões de rede abertas. As goroutines foram pensadas para esse tipo de carga.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>DevOps, nuvem e observabilidade</h2>
+  <div class="cols">
+    <div>
+      <p class="titulo-lista">Infraestrutura como código (HashiCorp)</p>
+      <ul class="media">
+        <li><b>Terraform</b>, que cria máquinas e redes na nuvem a partir de arquivos de configuração</li>
+        <li><b>Vault</b>, para guardar senhas e chaves, e <b>Consul</b>, para descoberta de serviços</li>
+      </ul>
+      <p class="titulo-lista">Monitoramento</p>
+      <ul class="media">
+        <li><b>Prometheus</b>, que coleta métricas dos servidores</li>
+        <li><b>Grafana</b>, cujo servidor é escrito em Go</li>
+        <li><b>Jaeger</b>, para rastrear requisições entre microsserviços</li>
+      </ul>
+    </div>
+    <div>
+      <p class="titulo-lista">Bancos e servidores</p>
+      <ul class="media">
+        <li><b>CockroachDB</b> e <b>InfluxDB</b>, bancos de dados distribuídos</li>
+        <li><b>Vitess</b>, criado no YouTube para escalar o MySQL</li>
+        <li><b>MinIO</b>, armazenamento de objetos compatível com o S3</li>
+        <li><b>Caddy</b> e <b>Traefik</b>, servidores web e proxies reversos</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Quase toda a pilha de ferramentas da Cloud Native Computing Foundation é escrita em Go, porque o ecossistema cresceu em volta do Kubernetes.</aside>
+</section>
+
+<section>
+  <h2>Ferramentas do dia a dia e empresas</h2>
+  <div class="cols">
+    <div>
+      <p class="titulo-lista">Ferramentas de linha de comando</p>
+      <div class="logos">
+        <span>gh (GitHub CLI)</span><span>Hugo</span><span>Ollama</span><span>fzf</span><span>lazygit</span><span>k9s</span><span>Syncthing</span><span>Gitea</span>
+      </div>
+      <p class="legenda">Uma CLI em Go é distribuída como um único arquivo por sistema operacional. O usuário baixa e roda, sem instalar runtime.</p>
+    </div>
+    <div>
+      <p class="titulo-lista">Em produção</p>
+      <ul class="media">
+        <li><b>Google</b>: serviços internos e o Vitess do YouTube</li>
+        <li><b>Uber</b>: boa parte dos microsserviços</li>
+        <li><b>Cloudflare</b>: serviços que ficam no caminho do tráfego</li>
+        <li><b>Dropbox</b>: migrou do Python para Go os sistemas que precisavam de desempenho</li>
+        <li><b>Twitch</b>: o sistema de chat</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">O padrão se repete: serviço de rede com muita concorrência, ou ferramenta que precisa ser distribuída sem dependências. Fora desse perfil, Go aparece bem menos.</aside>
+</section>
+
+<!-- ===================== PARTE 3 ===================== -->
+<section class="secao">
+  <p class="kicker">Parte 3</p>
+  <h2>Avaliação de critérios</h2>
+</section>
+
+<section>
+  <h2>Aplicabilidade</h2>
+  <div class="cols">
+    <div>
+      <p class="titulo-lista">Onde Go vai bem</p>
+      <ul class="media">
+        <li>É de propósito geral e é mais usada em servidores de rede, APIs, infraestrutura de nuvem e ferramentas de linha de comando (a parte 2 inteira)</li>
+      </ul>
+      <p class="titulo-lista">Onde Go vai mal</p>
+      <ul class="media">
+        <li>Interfaces gráficas e aplicativos mobile: a biblioteca padrão não tem nada para isso</li>
+        <li>Ciência de dados e aprendizado de máquina, onde o ecossistema é Python</li>
+        <li>Sistemas de tempo real e embarcados, porque as pausas do coletor de lixo não são previsíveis</li>
+      </ul>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por quê?</p>
+      <p>Go foi desenhada para resolver os problemas de um tipo de software, o servidor de rede do Google. Por isso a biblioteca padrão vem com servidor HTTP, criptografia, JSON e testes, e não traz nada de interface gráfica.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Confiabilidade</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Acesso fora dos limites de um array é verificado em tempo de execução e para o programa, em vez de ler lixo de memória como em C</li>
+        <li>Não há aritmética de ponteiro</li>
+        <li>O coletor de lixo elimina o <code>free</code> duplo e o ponteiro solto</li>
+        <li>Declarar uma variável e não usar é erro de compilação, assim como importar um pacote sem usar</li>
+      </ul>
+<pre class="erro"><code class="language-text" data-trim>notas := []int{7, 8, 9}
+notas[5]
+// panic: runtime error: index out of range [5] with length 3</code></pre>
+      <p class="contra"><b>Por que só "um pouco" confiável:</b> o ponteiro <code>nil</code> continua existindo e derruba o programa, e um erro retornado pode ser ignorado com <code>_</code>.</p>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que não tem aritmética de ponteiro?</p>
+      <blockquote>"Safety. Without pointer arithmetic it's possible to create a language that can never derive an illegal address that succeeds incorrectly."<span class="fonte">Go FAQ</span></blockquote>
+      <p>O FAQ acrescenta que um laço com índice já é tão rápido quanto um com ponteiro, e que sem aritmética o coletor de lixo fica mais simples.</p>
+      <p class="titulo-caixa">Por que variável não usada é erro?</p>
+      <blockquote>"The presence of an unused variable may indicate a bug, while unused imports just slow down compilation."<span class="fonte">Go FAQ</span></blockquote>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Facilidade de aprendizado</h2>
+  <div class="cols">
+    <div>
+      <ul class="media">
+        <li>A sintaxe é pequena: 25 palavras reservadas, contra 32 do C e mais de 50 do Java</li>
+        <li>Há um jeito de fazer cada coisa: um só laço, um formatador oficial, nenhuma herança</li>
+        <li>A concorrência é a cereja do bolo de Go, e para usá-la bem é preciso background de computação: condição de corrida, deadlock, sincronização</li>
+      </ul>
+<pre class="erro"><code class="language-text" data-trim>ch := make(chan int)
+ch &lt;- 1      // ninguém vai ler
+// fatal error: all goroutines are asleep - deadlock!</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que tão pequena?</p>
+      <p>O Google contratava muitos programadores recém-formados, e o código passava por muitas mãos. Pike diz que a linguagem tinha de ser aprendida rápido por quem veio de C, C++ ou Java.</p>
+      <p>O que dá trabalho em Go são os conceitos. As três linhas ao lado estão sintaticamente certas e travam o programa, e só percebe o motivo quem sabe como um canal sem buffer funciona.</p>
+      <p class="fonte">PIKE, "Go at Google", 2012</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Eficiência</h2>
+  <div class="cols">
+    <div>
+      <ul class="media">
+        <li>Compila para código de máquina nativo, sem máquina virtual e sem interpretador</li>
+        <li>Uma goroutine começa com uns poucos KB de pilha, então um programa aguenta centenas de milhares delas</li>
+        <li>O coletor de lixo tem um custo em CPU e causa pausas curtas, e é por isso que Go fica atrás de C e Rust em código muito pesado</li>
+        <li>Está validada em infraestrutura crítica: Docker e Kubernetes rodam em cima dela</li>
+      </ul>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">O equilíbrio escolhido</p>
+      <p>Os autores queriam a velocidade de uma linguagem compilada junto com a comodidade de um coletor de lixo.</p>
+      <p>Aceitaram perder um pouco de desempenho bruto para ganhar compilação rápida e segurança de memória.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Portabilidade</h2>
+  <div class="cols">
+    <div>
+      <ul class="media">
+        <li>A biblioteca padrão esconde o que depende do sistema operacional: arquivos, caminhos, rede, tempo</li>
+        <li>O mesmo código compila para Linux, Windows e macOS sem <code>#ifdef</code></li>
+        <li>O resultado é um único executável, sem dependências</li>
+        <li>A compilação cruzada é uma variável de ambiente:</li>
+      </ul>
+<pre><code class="language-bash" data-trim>GOOS=windows GOARCH=amd64 go build   # gera um .exe no Linux
+GOOS=darwin  GOARCH=arm64 go build   # binário para Mac M1</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que um executável só?</p>
+      <p>No Google, colocar um programa em milhares de servidores esbarrava em versões diferentes de bibliotecas instaladas em cada máquina. Com tudo ligado estaticamente no binário, basta copiar um arquivo.</p>
+      <p>Java resolve a portabilidade com a JVM, que precisa estar instalada. Go resolve recompilando para cada alvo.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Método de projeto</h2>
+  <div class="cols">
+    <div>
+      <ul class="media">
+        <li>Principalmente estruturado e imperativo: funções, variáveis, sequência, seleção e repetição</li>
+        <li>Tem tipos com métodos e interfaces, mas não tem classes nem herança</li>
+      </ul>
+<pre><code class="language-go" data-trim>func media(notas []float64) float64 {
+    soma := 0.0
+    for _, n := range notas {
+        soma += n
+    }
+    return soma / float64(len(notas))
+}</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que não tem herança?</p>
+      <blockquote>"Object-oriented programming, at least in the best-known languages, involves too much discussion of the relationships between types, relationships that often could be derived automatically."<span class="fonte">Go FAQ</span></blockquote>
+      <p>No lugar da hierarquia de classes, Go usa composição (uma struct dentro da outra) e interfaces que o tipo satisfaz sem precisar declarar.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Evolutibilidade</h2>
+  <div class="cols">
+    <div>
+      <p class="titulo-lista">O programa evolui com facilidade</p>
+      <ul class="compacta">
+        <li><code>gofmt</code> formata todo código Go do mesmo jeito, então qualquer pessoa lê o código de qualquer outra</li>
+        <li>Com tipagem estática, mudar uma assinatura faz o compilador apontar cada lugar que quebrou</li>
+        <li>Interfaces pequenas e implícitas deixam trocar uma implementação sem mexer em quem a usa</li>
+      </ul>
+      <p class="titulo-lista">A linguagem evolui sem quebrar</p>
+      <ul class="compacta">
+        <li>Desde o Go 1.0 (2012), o código continua compilando nas versões novas</li>
+        <li>Os genéricos entraram na 1.18 sem invalidar nada antigo</li>
+        <li>Quando um comportamento muda, ele só vale para quem declara a versão nova no <code>go.mod</code></li>
+        <li><code>go fix</code> reescreve automaticamente o uso de APIs antigas</li>
+      </ul>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">A promessa de compatibilidade</p>
+      <blockquote>"Programs written to the Go 1 specification will continue to compile and run correctly, unchanged, over the lifetime of that specification."<span class="fonte">Go 1 and the Future of Go Programs</span></blockquote>
+      <blockquote>"Gofmt's style is no one's favorite, yet gofmt is everyone's favorite."<span class="fonte">Go Proverbs, Rob Pike</span></blockquote>
+      <p>Python, por comparação, quebrou boa parte do código existente na passagem da versão 2 para a 3.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Reusabilidade</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Permite polimorfismo paramétrico: uma função ou tipo genérico serve para vários tipos (detalhes na parte 4)</li>
+        <li>Interfaces fazem uma função aceitar qualquer tipo que tenha os métodos pedidos</li>
+        <li>O princípio DIY (<em>do it yourself</em>) é muito forte na comunidade: em vez de importar uma biblioteca pequena, escreve-se o próprio código com a biblioteca padrão</li>
+      </ul>
+<pre><code class="language-go" data-trim>func Maior[T cmp.Ordered](a, b T) T {
+    if a &gt; b {
+        return a
+    }
+    return b
+}
+Maior(3, 9)         // 9
+Maior("go", "ada")  // "go"</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que a cultura DIY?</p>
+      <blockquote>"A little copying is better than a little dependency."<span class="fonte">Go Proverbs, Rob Pike</span></blockquote>
+      <p>Cada dependência traz código que você não controla, atualizações que podem quebrar e mais tempo de compilação. A biblioteca padrão já cobre HTTP, JSON, criptografia e testes, então dá para fazer muita coisa sem biblioteca externa.</p>
+      <p>A contrapartida é que a comunidade reutiliza menos do que a linguagem permite.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Integração com outros softwares</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>O <code>cgo</code> integra Go com C: o código C vai num comentário logo acima de <code>import "C"</code></li>
+        <li>Assim dá para usar bibliotecas C que já existem, como SQLite e OpenSSL</li>
+        <li>Go também pode gerar uma biblioteca compartilhada que outro programa em C chama</li>
+      </ul>
+<pre><code class="language-go" data-trim>/*
+#include &lt;math.h&gt;
+#cgo LDFLAGS: -lm
+*/
+import "C"
+
+fmt.Println(C.sqrt(2))   // 1.4142135623730951</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que a comunidade evita o cgo?</p>
+      <blockquote>"Cgo is not Go."<span class="fonte">Go Proverbs, Rob Pike</span></blockquote>
+      <p>Chamar C custa caro, porque a goroutine precisa trocar para uma pilha de sistema. Com cgo o binário deixa de ser independente e a compilação cruzada complica.</p>
+      <p>Por isso muitos projetos reescrevem a biblioteca em Go puro, mais um caso da cultura DIY.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Custo</h2>
+  <div class="cols">
+    <div>
+      <ul class="media">
+        <li>Linguagem open source desde 2009, com licença BSD</li>
+        <li>Compilador, gerenciador de dependências, formatador, testes e análise estática vêm juntos e de graça</li>
+        <li>Funciona em qualquer editor</li>
+      </ul>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Os outros custos</p>
+      <p>Treinar alguém em Go é barato porque a linguagem é pequena. Executar também, porque o código é nativo e usa pouca memória.</p>
+      <p>A manutenção é barata pela formatação única e pela promessa de compatibilidade. Onde Go custa mais é na verbosidade: o tratamento de erro repete muitas linhas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PARTE 4 ===================== -->
+<section class="secao">
+  <p class="kicker">Parte 4</p>
+  <h2>Avaliações teóricas</h2>
+  <p class="sub">Os conceitos vistos em aula, aplicados a Go</p>
+</section>
+
+<section>
+  <h2>Escopo</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>O escopo é estático (léxico): dá para saber a qual declaração um nome se refere lendo o texto do programa, sem executar</li>
+        <li>Cada par de chaves abre um bloco, e um nome declarado dentro oculta o de fora</li>
+        <li>Os níveis são universo, pacote, arquivo, função e bloco</li>
+      </ul>
+<pre><code class="language-go" data-trim>var x = "pacote"
+
+func main() {
+    fmt.Println(x)      // pacote
+    x := "função"
+    {
+        x := "bloco"
+        fmt.Println(x)  // bloco
+    }
+    fmt.Println(x)      // função
+}</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que estático?</p>
+      <p>O compilador resolve cada nome antes de rodar o programa, então não há busca de variáveis em tempo de execução e quem lê o código sabe de onde cada nome vem.</p>
+      <p>É o mesmo modelo de C, Java e da maioria das linguagens atuais. Escopo dinâmico ficou restrito a casos como o Lisp antigo e variáveis de shell.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Expressões e comandos: sem ternário</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Go não tem o operador <code>?:</code></li>
+        <li>O <code>if</code> é um comando e não uma expressão: ele não devolve valor, então não dá para escrever <code>x := if ...</code></li>
+        <li>Atribuição e <code>i++</code> também são comandos, então <code>if (x = 5)</code> e <code>y = i++</code> não compilam</li>
+      </ul>
+<pre class="erro"><code class="language-text" data-trim>maior := a &gt; b ? a : b
+// invalid character U+003F '?'
+
+maior := if a &gt; b { a } else { b }
+// syntax error: unexpected keyword if, expected expression</code></pre>
+<pre><code class="language-go" data-trim>maior := a
+if b &gt; a {
+    maior = b
+}</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que não tem ternário?</p>
+      <blockquote>"The reason ?: is absent from Go is that the language's designers had seen the operation used too often to create impenetrably complex expressions. The if-else form, although longer, is unquestionably clearer. A language needs only one conditional control flow construct."<span class="fonte">Go FAQ</span></blockquote>
+      <p>Pelo mesmo raciocínio, <code>if</code> não virou expressão: seria uma segunda forma de condicional. E tirar a atribuição das expressões elimina o clássico <code>if (x = 5)</code> do C, que compila e está errado.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Expressões e comandos: sem while</h2>
+  <div class="cols">
+    <div>
+<pre><code class="language-go" data-trim>for i := 0; i &lt; 10; i++ { }   // for clássico de C
+
+for n &gt; 0 {                   // o "while"
+    n--
+}
+
+for {                          // laço infinito
+    if pronto() { break }
+}
+
+for i, nota := range notas { } // percorre coleções</code></pre>
+      <p class="legenda">Um único comando de repetição cobre todos os casos. Também não existe <code>do-while</code>.</p>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que só <code>for</code>?</p>
+      <p>Um <code>while</code> é um <code>for</code> sem as cláusulas de início e incremento. Ter duas palavras para a mesma coisa não acrescenta poder à linguagem, só mais uma regra para aprender.</p>
+      <blockquote>"It unifies for and while and there is no do-while."<span class="fonte">Effective Go</span></blockquote>
+      <p>Vale o mesmo critério do ternário, uma construção por conceito. É assim que a linguagem fica com 25 palavras reservadas.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Tipos primitivos</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Não tem <code>char</code>. Um caractere é uma runa (<code>rune</code>, apelido de <code>int32</code>), que guarda um ponto de código Unicode</li>
+        <li><code>byte</code> é apelido de <code>uint8</code>, e <code>string</code> é uma sequência imutável de bytes em UTF-8</li>
+        <li>Não tem <code>enum</code>. Usa-se constantes com <code>iota</code>, que conta 0, 1, 2...</li>
+        <li>Os demais: <code>bool</code>, inteiros de 8 a 64 bits com e sem sinal, <code>float32</code>, <code>float64</code> e complexos</li>
+      </ul>
+<pre><code class="language-go" data-trim>len("ção")          // 5 (bytes)
+len([]rune("ção"))  // 3 (runas)
+
+type Dia int
+const (
+    Domingo Dia = iota  // 0
+    Segunda             // 1
+    Terca               // 2
+)</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que runa e não char?</p>
+      <p>Em C, <code>char</code> é um byte, e um byte não comporta "ç" nem "ã" em UTF-8. Pike e Thompson criaram o UTF-8, e fizeram a linguagem separar as duas ideias: byte é byte, e o caractere Unicode ganhou nome próprio.</p>
+      <p class="titulo-caixa">Por que não tem enum?</p>
+      <p>O FAQ não dá um motivo. Na prática, <code>iota</code> resolve o caso comum sem uma construção nova. O custo é que <code>Segunda + Terca</code> compila, coisa que um enum de verdade proibiria.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Tipos compostos</h2>
+  <div class="cols">
+    <div>
+<pre><code class="language-go" data-trim>// array: tamanho fixo e faz parte do tipo
+notas := [3]float64{7, 8.5, 9}
+
+// slice: uma janela sobre um array, que cresce
+nomes := []string{"ana"}
+nomes = append(nomes, "caio")
+
+// map: tabela hash
+idade := map[string]int{"ana": 20}
+
+// struct: produto cartesiano
+type Aluno struct {
+    Nome  string
+    Notas []float64
+}</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que array e slice?</p>
+      <p>O array é um valor de tamanho fixo e é copiado inteiro na atribuição. É previsível, mas pouco prático. O slice é uma pequena estrutura (ponteiro, tamanho e capacidade) que aponta para um array e cresce com <code>append</code>.</p>
+      <p>Em Go, quase todo código usa slices. O array fica por baixo, como o armazenamento.</p>
+      <p class="titulo-caixa">Por que map embutido?</p>
+      <p>Tabela hash é tão comum em servidores que os autores a puseram na linguagem, com sintaxe própria, em vez de numa biblioteca.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Interfaces</h2>
+  <div class="cols">
+    <div>
+<pre><code class="language-go" data-trim>type Forma interface {
+    Area() float64
+}
+
+type Circulo struct{ Raio float64 }
+
+func (c Circulo) Area() float64 {
+    return math.Pi * c.Raio * c.Raio
+}
+
+// Circulo é uma Forma sem declarar nada
+
+formas := []Forma{Circulo{1}, Quadrado{2}}
+for _, f := range formas {
+    fmt.Println(f.Area())
+}</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que não tem <code>implements</code>?</p>
+      <blockquote>"A Go type implements an interface by implementing that interface's methods, nothing more. This property allows interfaces to be defined and used without needing to modify existing code."<span class="fonte">Go FAQ</span></blockquote>
+      <p>Dá para criar uma interface depois que o tipo já existe, até para tipos de uma biblioteca que você não pode editar.</p>
+      <blockquote>"The bigger the interface, the weaker the abstraction."<span class="fonte">Go Proverbs</span></blockquote>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Sistema de tipos</h2>
+  <table class="tabela classificacao">
+    <tr><th>Classificação</th><th>Go</th><th>Como aparece</th></tr>
+    <tr><td>Estática ou dinâmica</td><td><b>Estática</b></td><td>todo tipo é conhecido na compilação</td></tr>
+    <tr><td>Forte ou fraca</td><td><b>Forte</b></td><td>nenhuma conversão implícita, nem de <code>int</code> para <code>float64</code></td></tr>
+    <tr><td>Manifesta ou inferida</td><td><b>As duas</b></td><td><code>var x float64 = 1</code> ou <code>x := 1.0</code></td></tr>
+    <tr><td>Compatibilidade</td><td><b>Nominal</b> para tipos com nome, <b>estrutural</b> para interfaces</td><td>ver abaixo</td></tr>
+  </table>
+  <div class="cols">
+<pre><code class="language-go" data-trim>type Celsius float64
+type Fahrenheit float64
+
+var c Celsius = 30
+var f Fahrenheit = c   // erro: tipos diferentes
+f = Fahrenheit(c*9/5 + 32)  // conversão explícita</code></pre>
+    <div class="porque">
+      <p class="titulo-caixa">Por que os dois tipos de compatibilidade?</p>
+      <p>Com compatibilidade nominal, o compilador impede somar <code>Celsius</code> com <code>Fahrenheit</code>, mesmo sendo os dois <code>float64</code> por baixo.</p>
+      <p>Nas interfaces a compatibilidade é estrutural, então qualquer tipo com os métodos certos serve, inclusive tipos escritos antes da interface existir.</p>
+    </div>
+  </div>
+  <aside class="notes">Por que nenhuma conversão implícita? O FAQ diz que as conversões automáticas de C entre tipos numéricos causam mais confusão do que ajudam. Até int e int64 são tipos diferentes.</aside>
+</section>
+
+<section>
+  <h2>Polimorfismo</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Não tem sobrecarga: duas funções não podem ter o mesmo nome com parâmetros diferentes, e operadores não podem ser redefinidos</li>
+        <li>Tem polimorfismo paramétrico desde a 1.18: funções e tipos recebem parâmetros de tipo, limitados por uma restrição</li>
+        <li>Tem polimorfismo de inclusão pelas interfaces, com despacho dinâmico</li>
+        <li>Não tem coerção, porque não há conversão implícita</li>
+      </ul>
+<pre><code class="language-go" data-trim>type Numero interface {
+    ~int | ~int64 | ~float64
+}
+
+func Soma[T Numero](xs []T) T {
+    var total T
+    for _, x := range xs { total += x }
+    return total
+}
+
+Soma([]int{1, 2, 3})       // 6
+Soma([]float64{1.5, 2.5})  // 4
+
+type Pilha[T any] struct{ itens []T }</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que não tem sobrecarga?</p>
+      <blockquote>"Experience with other languages told us that having a variety of methods with the same name but different signatures was occasionally useful but that it could also be confusing and fragile in practice."<span class="fonte">Go FAQ</span></blockquote>
+      <p class="titulo-caixa">Por que os genéricos demoraram 13 anos?</p>
+      <p>Durante anos o FAQ dizia que genéricos custam complexidade no sistema de tipos e no runtime, e que a equipe ainda não tinha achado um desenho que valesse esse custo. Várias propostas foram descartadas até a 1.18, em 2022.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Encapsulamento e proteção</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>A unidade de encapsulamento é o pacote e não a classe</li>
+        <li>Só existem dois níveis de visibilidade, e quem decide é a primeira letra do nome: maiúscula é pública fora do pacote, minúscula é privada ao pacote</li>
+        <li>Não existe <code>protected</code> nem <code>friend</code></li>
+        <li>Um pacote dentro de uma pasta <code>internal/</code> só pode ser importado pelo próprio projeto</li>
+      </ul>
+<pre><code class="language-go" data-trim>package conta
+
+type Conta struct {
+    Titular string   // público
+    saldo   float64  // privado ao pacote
+}
+
+func (c *Conta) Depositar(v float64) {
+    c.saldo += v
+}</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que a letra maiúscula?</p>
+      <p>Em Java, para saber se um membro é público, você precisa ir até a declaração. Em Go basta olhar o nome no ponto em que é usado: <code>conta.Depositar</code> é público, <code>c.saldo</code> não.</p>
+      <p>Encapsular por pacote em vez de por classe combina com a falta de classes: tipos do mesmo pacote enxergam os campos privados uns dos outros, como partes de um mesmo módulo.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Gerenciamento de memória</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Tem coletor de lixo concorrente, que roda junto com o programa. Não existe <code>malloc</code> nem <code>free</code></li>
+        <li>O compilador decide se uma variável fica na pilha ou no monte olhando o tempo de vida dela, num processo chamado análise de escape</li>
+        <li>Se a variável continua sendo usada depois que a função termina, vai para o monte. Se não, fica na pilha</li>
+      </ul>
+<pre><code class="language-go" data-trim>func novoContador() *int {
+    n := 0
+    return &amp;n   // em C isto é um bug;
+}               // em Go, n vai para o monte</code></pre>
+<pre><code class="language-text" data-trim>$ go build -gcflags=-m
+./main.go:2:2: moved to heap: n</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que coletor de lixo?</p>
+      <p>Para o FAQ, controlar o tempo de vida de cada objeto é uma das maiores fontes de trabalho em programas de sistema. Com concorrência fica pior, porque é difícil saber quando nenhuma goroutine usa mais um dado.</p>
+      <p class="titulo-caixa">Por que o programador não escolhe pilha ou monte?</p>
+      <blockquote>"From a correctness standpoint, you don't need to know."<span class="fonte">Go FAQ</span></blockquote>
+      <p>Em qualquer dos dois lugares o programa funciona igual. A escolha só muda o desempenho, então o compilador decide sozinho.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Persistência</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>A linguagem não tem persistência embutida: ela vem da biblioteca padrão</li>
+        <li>Duas interfaces abstraem toda entrada e saída: <code>io.Reader</code> e <code>io.Writer</code></li>
+        <li>Arquivo, conexão de rede, terminal, buffer de memória e compressão implementam as duas</li>
+        <li>Por cima delas ficam <code>encoding/json</code>, <code>encoding/csv</code>, <code>encoding/gob</code> e <code>database/sql</code></li>
+      </ul>
+<pre><code class="language-go" data-trim>type Reader interface {
+    Read(p []byte) (n int, err error)
+}
+type Writer interface {
+    Write(p []byte) (n int, err error)
+}
+
+func salvar(w io.Writer, a Aluno) error {
+    return json.NewEncoder(w).Encode(a)
+}
+
+salvar(arquivo, ana)    // grava no disco
+salvar(os.Stdout, ana)  // mostra no terminal
+salvar(conexao, ana)    // manda pela rede</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que interfaces tão pequenas?</p>
+      <p>Um método só é fácil de implementar, então quase tudo acaba sendo um <code>Reader</code> ou um <code>Writer</code>. Assim a mesma função <code>salvar</code> serve para disco, terminal e rede sem mudar uma linha.</p>
+      <p>Também dá para empilhar: um <code>gzip.Writer</code> recebe outro <code>Writer</code> e comprime o que passa por ele. É a ideia dos pipes do Unix, que Pike e Thompson ajudaram a criar.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Passagem de parâmetros</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Só existe passagem por cópia</li>
+        <li>Para alterar o original, passa-se um ponteiro, e o próprio ponteiro é copiado</li>
+        <li>Slices e maps parecem passagem por referência porque a cópia contém um ponteiro para os mesmos dados</li>
+      </ul>
+<pre><code class="language-go" data-trim>func dobrar(x int)      { x *= 2 }
+func dobrarP(x *int)    { *x *= 2 }
+
+n := 5
+dobrar(n)    // n continua 5
+dobrarP(&amp;n)  // n vira 10
+
+func zerar(s []int) { s[0] = 0 }
+s := []int{1, 2, 3}
+zerar(s)     // s vira [0 2 3]</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que só por cópia?</p>
+      <blockquote>"As in all languages in the C family, everything in Go is passed by value."<span class="fonte">Go FAQ</span></blockquote>
+      <p>Em C++, <code>f(x)</code> pode alterar <code>x</code> se o parâmetro for uma referência, e quem lê a chamada não percebe. Em Go, se a função pode alterar a variável, a chamada mostra isso com <code>&amp;n</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Concorrência: goroutines</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Uma goroutine é uma função executando de forma concorrente. Para criar uma, basta escrever <code>go</code> antes da chamada</li>
+        <li>Quem gerencia as goroutines é o runtime de Go e não o sistema operacional. O escalonador distribui milhares delas sobre poucas threads (modelo M:N)</li>
+        <li>Cada uma começa com uma pilha de poucos KB que cresce conforme precisa. Uma thread do sistema reserva 8 MB no Linux</li>
+      </ul>
+<pre><code class="language-go" data-trim>func atender(conn net.Conn) {
+    defer conn.Close()
+    // lê e responde a um cliente
+}
+
+for {
+    conn, _ := servidor.Accept()
+    go atender(conn)   // uma goroutine por cliente
+}</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que não usar threads do sistema?</p>
+      <p>Threads são caras de criar e de trocar, então um servidor em C++ ou Java não cria uma para cada cliente. Ele recorre a pools de threads ou a callbacks, e o código fica difícil de seguir.</p>
+      <p>Com goroutines baratas, cada cliente ganha a sua e o código de <code>atender</code> é sequencial e simples. Quem cuida de encaixar tudo nos núcleos é o runtime.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Concorrência: canais</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Um canal é um tubo tipado por onde goroutines trocam valores. A comunicação entre threads faz parte da linguagem: <code>chan</code>, <code>&lt;-</code> e <code>select</code> são sintaxe</li>
+        <li>Sem buffer, quem envia espera quem recebe, e os dois se encontram (rendezvous). Com buffer, o canal é uma fila limitada</li>
+        <li>O tipo pode restringir a direção: <code>chan&lt;- int</code> só envia e <code>&lt;-chan int</code> só recebe</li>
+        <li><code>close</code> avisa que acabou, e o <code>range</code> do outro lado termina sozinho</li>
+        <li><code>select</code> espera em vários canais e segue pelo primeiro que ficar pronto</li>
+      </ul>
+    </div>
+    <div>
+<pre><code class="language-go" data-trim>func produtor(saida chan&lt;- int) {
+    for i := 0; i &lt; 5; i++ {
+        saida &lt;- i          // envia
+    }
+    close(saida)
+}
+
+fila := make(chan int, 2)   // buffer de 2
+go produtor(fila)
+for v := range fila {       // recebe até fechar
+    fmt.Println(v)
+}
+
+select {
+case msg := &lt;-entrada:
+    tratar(msg)
+case &lt;-time.After(time.Second):
+    fmt.Println("timeout")
+}</code></pre>
+    </div>
+  </div>
+  <aside class="notes">O produtor-consumidor inteiro, com fila limitada, sem mutex nem variável de condição: o canal com buffer já é o buffer limitado da Aula 09.</aside>
+</section>
+
+<section>
+  <h2>Concorrência: por que canais?</h2>
+  <div class="cols">
+    <div>
+      <p class="titulo-lista">A biblioteca padrão também tem o modelo clássico</p>
+      <ul class="compacta">
+        <li><code>sync.Mutex</code> e <code>sync.RWMutex</code> para exclusão mútua</li>
+        <li><code>sync.WaitGroup</code> para esperar um grupo de goroutines terminar</li>
+        <li><code>sync.Once</code> para inicializar algo uma vez só, e <code>sync/atomic</code> para operações atômicas</li>
+        <li><code>go test -race</code> detecta condições de corrida enquanto os testes rodam</li>
+      </ul>
+<pre><code class="language-go" data-trim>var mu sync.Mutex
+mu.Lock()
+contador++
+mu.Unlock()</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">A filosofia</p>
+      <blockquote>"Don't communicate by sharing memory, share memory by communicating."<span class="fonte">Go Proverbs, Rob Pike</span></blockquote>
+      <p>O modelo vem do CSP, <em>Communicating Sequential Processes</em>, de Tony Hoare (1978). Em vez de várias threads mexendo no mesmo dado sob um lock, um dado pertence a uma goroutine de cada vez e passa para a próxima pelo canal.</p>
+      <p>O mutex continua ali para casos simples, como um contador. Para coordenar trabalho, a linguagem empurra para os canais.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Tratamento de erros</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li>Go não tem exceções. Um erro é um valor comum do tipo <code>error</code>, devolvido como último retorno da função</li>
+        <li>Quem chama verifica na hora, com <code>if err != nil</code></li>
+        <li>Um erro pode embrulhar outro com <code>%w</code>, e <code>errors.Is</code> procura um erro específico na cadeia</li>
+        <li><code>panic</code> existe só para falhas de programação, como índice inválido</li>
+      </ul>
+<pre><code class="language-go" data-trim>f, err := os.Open("notas.txt")
+if err != nil {
+    return fmt.Errorf("abrindo notas: %w", err)
+}
+defer f.Close()</code></pre>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que não tem exceção?</p>
+      <blockquote>"We believe that coupling exceptions to a control structure, as in the try-catch-finally idiom, results in convoluted code. It also tends to encourage programmers to label too many ordinary errors, such as failing to open a file, as exceptional."<span class="fonte">Go FAQ</span></blockquote>
+      <p>Falhar ao abrir um arquivo é algo esperado, então vira um valor tratado como qualquer outro, e dá para ver na própria função todos os caminhos que o programa pode seguir.</p>
+      <p>O preço é a verbosidade. Propostas para encurtar o <code>if err != nil</code> já foram feitas e rejeitadas pela comunidade.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FECHAMENTO ===================== -->
+<section>
+  <h2>Conclusão</h2>
+  <ul>
+    <li>Go nasceu de dois incômodos do Google: compilação lenta e concorrência difícil</li>
+    <li>Quase toda ausência é uma escolha: sem ternário, sem while, sem herança, sem sobrecarga, sem exceção. Os autores preferiram uma construção por conceito</li>
+    <li>O que ela traz de diferente é a concorrência dentro da linguagem, com goroutines e canais</li>
+    <li>Por isso domina a infraestrutura de nuvem, de Docker a Kubernetes, e fica de fora de GUI, ciência de dados e tempo real</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Referências</h2>
+  <ul class="refs">
+    <li>The Go Programming Language Specification. <span>go.dev/ref/spec</span></li>
+    <li>Frequently Asked Questions (FAQ). <span>go.dev/doc/faq</span></li>
+    <li>Effective Go. <span>go.dev/doc/effective_go</span></li>
+    <li>Go 1 and the Future of Go Programs. <span>go.dev/doc/go1compat</span></li>
+    <li>PIKE, R. <em>Go at Google: Language Design in the Service of Software Engineering</em>. SPLASH, 2012. <span>go.dev/talks/2012/splash.article</span></li>
+    <li>PIKE, R. <em>Less is exponentially more</em>. 2012. <span>commandcenter.blogspot.com</span></li>
+    <li>PIKE, R. <em>Go Proverbs</em>. Gopherfest, 2015. <span>go-proverbs.github.io</span></li>
+    <li>HOARE, C. A. R. <em>Communicating Sequential Processes</em>. CACM, v. 21, n. 8, 1978.</li>
+    <li>DONOVAN, A.; KERNIGHAN, B. <em>The Go Programming Language</em>. Addison-Wesley, 2015.</li>
+    <li>VAREJÃO, F. <em>Linguagens de Programação: Conceitos e Técnicas</em>. Campus, 2004.</li>
+  </ul>
+</section>
+
+<section class="capa">
+  <h1 class="menor">Obrigado</h1>
+  <p class="sub">Perguntas?</p>
+  <p class="autores">Nome 1 · Nome 2</p>
+</section>
+
+</div>
+</div>
+
+<script src="lib/reveal.js/dist/reveal.js"></script>
+<script src="lib/reveal.js/dist/plugin/highlight.js"></script>
+<script src="lib/reveal.js/dist/plugin/notes.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    slideNumber: 'c/t',
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    controlsTutorial: false,
+    pdfSeparateFragments: false,
+    plugins: [RevealHighlight, RevealNotes]
+  });
+</script>
+</body>
+</html>
