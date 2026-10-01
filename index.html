@@ -18,8 +18,8 @@
 <section class="capa">
   <p class="kicker">Paradigmas de Programação · UFES · 2026/2</p>
   <h1>Go</h1>
-  <p class="sub">A linguagem que o Google criou enquanto esperava o C++ compilar</p>
-  <p class="autores">Nome 1 · Nome 2</p>
+  <p class="sub">A linguagem que nasceu dentro do Google enquanto esperava o C++ compilava</p>
+  <p class="autores">Paulo S. A. Mônico · Victor Rangel</p>
   <p class="prof">Prof. Bruno Légora</p>
 </section>
 
@@ -27,9 +27,9 @@
   <h2>Roteiro</h2>
   <ol class="roteiro">
     <li><b>Contexto e histórico</b><span>os problemas que motivaram Go e quem a criou</span><em>~3 min</em></li>
-    <li><b>Casos de uso</b><span>os projetos conhecidos que são escritos em Go</span><em>~3 min</em></li>
     <li><b>Avaliação de critérios</b><span>de aplicabilidade a custo</span><em>~10 min</em></li>
     <li><b>Avaliações teóricas</b><span>escopo, tipos, memória, polimorfismo, concorrência, erros</span><em>~14 min</em></li>
+    <li><b>Casos de uso</b><span>os projetos conhecidos que são escritos em Go</span><em>~3 min</em></li>
   </ol>
 </section>
 
@@ -84,86 +84,6 @@
 <!-- ===================== PARTE 2 ===================== -->
 <section class="secao">
   <p class="kicker">Parte 2</p>
-  <h2>Casos de uso</h2>
-  <p class="sub">Se você usa Docker ou Kubernetes, já roda código Go todo dia</p>
-</section>
-
-<section>
-  <h2>Contêineres e orquestração</h2>
-  <div class="cols">
-    <div>
-      <ul class="media">
-        <li><b>Docker</b>, com o <code>containerd</code> e o <code>runc</code> por baixo, que são os programas que de fato criam os contêineres</li>
-        <li><b>Kubernetes</b>, o orquestrador de contêineres que o próprio Google abriu em 2014</li>
-        <li><b>etcd</b>, o banco chave-valor onde o Kubernetes guarda o estado do cluster</li>
-        <li><b>Helm</b>, o gerenciador de pacotes do Kubernetes</li>
-        <li><b>Istio</b> (plano de controle), para redes de serviços</li>
-      </ul>
-    </div>
-    <div class="porque">
-      <p class="titulo-caixa">Por que Go aqui?</p>
-      <p>Um contêiner precisa de um binário que rode sem instalar nada. Go gera um executável estático, que basta copiar para a imagem.</p>
-      <p>Orquestrar milhares de contêineres é, na prática, manter milhares de conexões de rede abertas. As goroutines foram pensadas para esse tipo de carga.</p>
-    </div>
-  </div>
-</section>
-
-<section>
-  <h2>DevOps, nuvem e observabilidade</h2>
-  <div class="cols">
-    <div>
-      <p class="titulo-lista">Infraestrutura como código (HashiCorp)</p>
-      <ul class="media">
-        <li><b>Terraform</b>, que cria máquinas e redes na nuvem a partir de arquivos de configuração</li>
-        <li><b>Vault</b>, para guardar senhas e chaves, e <b>Consul</b>, para descoberta de serviços</li>
-      </ul>
-      <p class="titulo-lista">Monitoramento</p>
-      <ul class="media">
-        <li><b>Prometheus</b>, que coleta métricas dos servidores</li>
-        <li><b>Grafana</b>, cujo servidor é escrito em Go</li>
-        <li><b>Jaeger</b>, para rastrear requisições entre microsserviços</li>
-      </ul>
-    </div>
-    <div>
-      <p class="titulo-lista">Bancos e servidores</p>
-      <ul class="media">
-        <li><b>CockroachDB</b> e <b>InfluxDB</b>, bancos de dados distribuídos</li>
-        <li><b>Vitess</b>, criado no YouTube para escalar o MySQL</li>
-        <li><b>MinIO</b>, armazenamento de objetos compatível com o S3</li>
-        <li><b>Caddy</b> e <b>Traefik</b>, servidores web e proxies reversos</li>
-      </ul>
-    </div>
-  </div>
-  <aside class="notes">Quase toda a pilha de ferramentas da Cloud Native Computing Foundation é escrita em Go, porque o ecossistema cresceu em volta do Kubernetes.</aside>
-</section>
-
-<section>
-  <h2>Ferramentas do dia a dia e empresas</h2>
-  <div class="cols">
-    <div>
-      <p class="titulo-lista">Ferramentas de linha de comando</p>
-      <div class="logos">
-        <span>gh (GitHub CLI)</span><span>Hugo</span><span>Ollama</span><span>fzf</span><span>lazygit</span><span>k9s</span><span>Syncthing</span><span>Gitea</span>
-      </div>
-      <p class="legenda">Uma CLI em Go é distribuída como um único arquivo por sistema operacional. O usuário baixa e roda, sem instalar runtime.</p>
-    </div>
-    <div>
-      <p class="titulo-lista">Em produção</p>
-      <ul class="media">
-        <li><b>Google</b>: serviços internos e o Vitess do YouTube</li>
-        <li><b>Uber</b>: boa parte dos microsserviços</li>
-        <li><b>Cloudflare</b>: serviços que ficam no caminho do tráfego</li>
-        <li><b>Dropbox</b>: migrou do Python para Go os sistemas que precisavam de desempenho</li>
-        <li><b>Twitch</b>: o sistema de chat</li>
-      </ul>
-    </div>
-  </div>
-  <aside class="notes">O padrão se repete: serviço de rede com muita concorrência, ou ferramenta que precisa ser distribuída sem dependências. Fora desse perfil, Go aparece bem menos.</aside>
-</section>
-
-<!-- ===================== PARTE 3 ===================== -->
-<section class="secao">
-  <p class="kicker">Parte 3</p>
   <h2>Avaliação de critérios</h2>
 </section>
 
@@ -171,20 +91,18 @@
   <h2>Aplicabilidade</h2>
   <div class="cols">
     <div>
-      <p class="titulo-lista">Onde Go vai bem</p>
+      <p class="titulo-lista">Onde Go se destaca</p>
       <ul class="media">
-        <li>É de propósito geral e é mais usada em servidores de rede, APIs, infraestrutura de nuvem e ferramentas de linha de comando (a parte 2 inteira)</li>
+        <li>É de propósito geral e é mais usada em servidores de rede, APIs, infraestrutura de nuvem e ferramentas de linha de comando (veja os exemplos na parte 4)</li>
       </ul>
-      <p class="titulo-lista">Onde Go vai mal</p>
+      <p class="titulo-lista">Onde Go não se destaca</p>
       <ul class="media">
-        <li>Interfaces gráficas e aplicativos mobile: a biblioteca padrão não tem nada para isso</li>
-        <li>Ciência de dados e aprendizado de máquina, onde o ecossistema é Python</li>
-        <li>Sistemas de tempo real e embarcados, porque as pausas do coletor de lixo não são previsíveis</li>
+        <li>Sistemas embarcados com requisitos de tempo real estrito, nos quais pausas do coletor de lixo (GC) são inadmissíveis</li>
       </ul>
     </div>
     <div class="porque">
       <p class="titulo-caixa">Por quê?</p>
-      <p>Go foi desenhada para resolver os problemas de um tipo de software, o servidor de rede do Google. Por isso a biblioteca padrão vem com servidor HTTP, criptografia, JSON e testes, e não traz nada de interface gráfica.</p>
+      <p>Go foi desenhada para resolver os problemas de um tipo de software, o servidor de rede do Google. Por isso a biblioteca padrão vem com servidor HTTP, criptografia, JSON e testes.</p>
     </div>
   </div>
 </section>
@@ -312,7 +230,7 @@ GOOS=darwin  GOARCH=arm64 go build   # binário para Mac M1</code></pre>
       </ul>
       <p class="titulo-lista">A linguagem evolui sem quebrar</p>
       <ul class="compacta">
-        <li>Desde o Go 1.0 (2012), o código continua compilando nas versões novas</li>
+        <li>Desde o Go 1.0 (2012), há uma promessa de preservar a compatibilidade do código, com exceções documentadas</li>
         <li>Os genéricos entraram na 1.18 sem invalidar nada antigo</li>
         <li>Quando um comportamento muda, ele só vale para quem declara a versão nova no <code>go.mod</code></li>
         <li><code>go fix</code> reescreve automaticamente o uso de APIs antigas</li>
@@ -320,7 +238,7 @@ GOOS=darwin  GOARCH=arm64 go build   # binário para Mac M1</code></pre>
     </div>
     <div class="porque">
       <p class="titulo-caixa">A promessa de compatibilidade</p>
-      <blockquote>"Programs written to the Go 1 specification will continue to compile and run correctly, unchanged, over the lifetime of that specification."<span class="fonte">Go 1 and the Future of Go Programs</span></blockquote>
+      <p>Código conforme à especificação do Go 1 deve continuar compilando e funcionando nas versões futuras da série 1.x.</p>
       <blockquote>"Gofmt's style is no one's favorite, yet gofmt is everyone's favorite."<span class="fonte">Go Proverbs, Rob Pike</span></blockquote>
       <p>Python, por comparação, quebrou boa parte do código existente na passagem da versão 2 para a 3.</p>
     </div>
@@ -332,7 +250,7 @@ GOOS=darwin  GOARCH=arm64 go build   # binário para Mac M1</code></pre>
   <div class="cols">
     <div>
       <ul class="compacta">
-        <li>Permite polimorfismo paramétrico: uma função ou tipo genérico serve para vários tipos (detalhes na parte 4)</li>
+        <li>Permite polimorfismo paramétrico: uma função ou tipo genérico serve para vários tipos (detalhes na parte 3)</li>
         <li>Interfaces fazem uma função aceitar qualquer tipo que tenha os métodos pedidos</li>
         <li>O princípio DIY (<em>do it yourself</em>) é muito forte na comunidade: em vez de importar uma biblioteca pequena, escreve-se o próprio código com a biblioteca padrão</li>
       </ul>
@@ -398,9 +316,9 @@ fmt.Println(C.sqrt(2))   // 1.4142135623730951</code></pre>
   </div>
 </section>
 
-<!-- ===================== PARTE 4 ===================== -->
+<!-- ===================== PARTE 3 ===================== -->
 <section class="secao">
-  <p class="kicker">Parte 4</p>
+  <p class="kicker">Parte 3</p>
   <h2>Avaliações teóricas</h2>
   <p class="sub">Os conceitos vistos em aula, aplicados a Go</p>
 </section>
@@ -865,14 +783,94 @@ defer f.Close()</code></pre>
   </div>
 </section>
 
+<!-- ===================== PARTE 4 ===================== -->
+<section class="secao">
+  <p class="kicker">Parte 4</p>
+  <h2>Casos de uso</h2>
+  <p class="sub">Se você usa Docker ou Kubernetes, já roda código Go todo dia</p>
+</section>
+
+<section>
+  <h2>Contêineres e orquestração</h2>
+  <div class="cols">
+    <div>
+      <ul class="media">
+        <li><b>Docker</b>, com o <code>containerd</code> e o <code>runc</code> por baixo, que são os programas que de fato criam os contêineres</li>
+        <li><b>Kubernetes</b>, o orquestrador de contêineres que o próprio Google abriu em 2014</li>
+        <li><b>etcd</b>, o banco chave-valor onde o Kubernetes guarda o estado do cluster</li>
+        <li><b>Helm</b>, o gerenciador de pacotes do Kubernetes</li>
+        <li><b>Istio</b> (plano de controle), para redes de serviços</li>
+      </ul>
+    </div>
+    <div class="porque">
+      <p class="titulo-caixa">Por que Go aqui?</p>
+      <p>Um contêiner precisa de um binário que rode sem instalar nada. Go gera um executável estático, que basta copiar para a imagem.</p>
+      <p>Orquestrar milhares de contêineres é, na prática, manter milhares de conexões de rede abertas. As goroutines foram pensadas para esse tipo de carga.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>DevOps, nuvem e observabilidade</h2>
+  <div class="cols">
+    <div>
+      <p class="titulo-lista">Infraestrutura como código (HashiCorp)</p>
+      <ul class="media">
+        <li><b>Terraform</b>, que cria máquinas e redes na nuvem a partir de arquivos de configuração</li>
+        <li><b>Vault</b>, para guardar senhas e chaves, e <b>Consul</b>, para descoberta de serviços</li>
+      </ul>
+      <p class="titulo-lista">Monitoramento</p>
+      <ul class="media">
+        <li><b>Prometheus</b>, que coleta métricas dos servidores</li>
+        <li><b>Grafana</b>, cujo servidor é escrito em Go</li>
+        <li><b>Jaeger</b>, para rastrear requisições entre microsserviços</li>
+      </ul>
+    </div>
+    <div>
+      <p class="titulo-lista">Bancos e servidores</p>
+      <ul class="media">
+        <li><b>CockroachDB</b> e <b>InfluxDB</b>, bancos de dados distribuídos</li>
+        <li><b>Vitess</b>, criado no YouTube para escalar o MySQL</li>
+        <li><b>MinIO</b>, armazenamento de objetos compatível com o S3</li>
+        <li><b>Caddy</b> e <b>Traefik</b>, servidores web e proxies reversos</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Quase toda a pilha de ferramentas da Cloud Native Computing Foundation é escrita em Go, porque o ecossistema cresceu em volta do Kubernetes.</aside>
+</section>
+
+<section>
+  <h2>Ferramentas do dia a dia e empresas</h2>
+  <div class="cols">
+    <div>
+      <p class="titulo-lista">Ferramentas de linha de comando</p>
+      <div class="logos">
+        <span>gh (GitHub CLI)</span><span>Hugo</span><span>Ollama</span><span>fzf</span><span>lazygit</span><span>k9s</span><span>Syncthing</span><span>Gitea</span>
+      </div>
+      <p class="legenda">Uma CLI em Go é distribuída como um único arquivo por sistema operacional. O usuário baixa e roda, sem instalar runtime.</p>
+    </div>
+    <div>
+      <p class="titulo-lista">Em produção</p>
+      <ul class="media">
+        <li><b>Google</b>: serviços internos e o Vitess do YouTube</li>
+        <li><b>Uber</b>: boa parte dos microsserviços</li>
+        <li><b>Cloudflare</b>: serviços que ficam no caminho do tráfego</li>
+        <li><b>Dropbox</b>: migrou do Python para Go os sistemas que precisavam de desempenho</li>
+        <li><b>Twitch</b>: o sistema de chat</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">O padrão se repete: serviço de rede com muita concorrência, ou ferramenta que precisa ser distribuída sem dependências. Fora desse perfil, Go aparece bem menos.</aside>
+</section>
+
 <!-- ===================== FECHAMENTO ===================== -->
 <section>
   <h2>Conclusão</h2>
   <ul>
-    <li>Go nasceu de dois incômodos do Google: compilação lenta e concorrência difícil</li>
+    <li>Go nasceu de dois incômodos dentro do Google: compilação lenta e concorrência difícil</li>
     <li>Quase toda ausência é uma escolha: sem ternário, sem while, sem herança, sem sobrecarga, sem exceção. Os autores preferiram uma construção por conceito</li>
     <li>O que ela traz de diferente é a concorrência dentro da linguagem, com goroutines e canais</li>
-    <li>Por isso domina a infraestrutura de nuvem, de Docker a Kubernetes, e fica de fora de GUI, ciência de dados e tempo real</li>
+    <li>Por isso domina a infraestrutura de nuvem, de Docker a Kubernetes</li>
   </ul>
 </section>
 
@@ -895,7 +893,7 @@ defer f.Close()</code></pre>
 <section class="capa">
   <h1 class="menor">Obrigado</h1>
   <p class="sub">Perguntas?</p>
-  <p class="autores">Nome 1 · Nome 2</p>
+  <p class="autores">Paulo S. A. Mônico · Victor Rangel</p>
 </section>
 
 </div>

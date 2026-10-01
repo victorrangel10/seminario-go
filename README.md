@@ -10,9 +10,9 @@ Atalhos no navegador: `F` para tela cheia, `S` para as notas do apresentador e `
 ## Conteúdo
 
 1. Contexto e histórico
-2. Casos de uso
-3. Avaliação de critérios (aplicabilidade, confiabilidade, facilidade de aprendizado, eficiência, portabilidade, método de projeto, evolutibilidade, reusabilidade, integração com outros softwares, custo)
-4. Avaliações teóricas (escopo, expressões e comandos, tipos, sistema de tipos, polimorfismo, encapsulamento, memória, persistência, passagem de parâmetros, concorrência, tratamento de erros)
+2. Avaliação de critérios (aplicabilidade, confiabilidade, facilidade de aprendizado, eficiência, portabilidade, método de projeto, evolutibilidade, reusabilidade, integração com outros softwares, custo)
+3. Avaliações teóricas (escopo, expressões e comandos, tipos, sistema de tipos, polimorfismo, encapsulamento, memória, persistência, passagem de parâmetros, concorrência, tratamento de erros)
+4. Casos de uso
 
 ## Gerar o PDF
 
