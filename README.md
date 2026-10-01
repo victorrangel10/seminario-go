@@ -16,8 +16,25 @@ Atalhos no navegador: `F` para tela cheia, `S` para as notas do apresentador e `
 
 ## Gerar o PDF
 
+### Chromium (linha de comando)
+
 ```sh
 chromium --headless=new --user-data-dir="$(mktemp -d)" --print-to-pdf=seminario-go.pdf \
   --no-pdf-header-footer --window-size=1280,720 --virtual-time-budget=20000 \
   "file://$PWD/index.html?print-pdf"
 ```
+
+### Firefox
+
+Na pasta do projeto, abra os slides no modo de impressão:
+
+```sh
+firefox "file://$PWD/index.html?print-pdf"
+```
+
+1. Aguarde os slides carregarem e pressione `Ctrl+P` (`Cmd+P` no macOS).
+2. Selecione **Salvar como PDF** como destino e a orientação **Paisagem**.
+3. Em **Mais configurações**, escolha margens **Nenhuma**, mantenha o formato **Original**, ative **Imprimir fundos** e desative **Imprimir cabeçalhos e rodapés**.
+4. Confira a prévia e salve como `seminario-go.pdf`.
+
+No Firefox, a exportação é feita pelo diálogo de impressão. Veja as [instruções de impressão da Mozilla](https://support.mozilla.org/pt-BR/kb/como-imprimir-paginas-no-firefox).
