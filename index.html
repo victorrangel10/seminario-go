@@ -17,7 +17,7 @@
 <!-- ===================== CAPA ===================== -->
 <section class="capa">
   <p class="kicker">Paradigmas de Programação · UFES · 2026/2</p>
-  <h1>Go</h1>
+  <h1><img src="./go_logo.png" height="150"></h1>
   <p class="sub">A linguagem que nasceu no Google enquanto seus criadores esperavam o C++ compilar</p>
   <p class="autores">Paulo S. A. Mônico · Victor Rangel</p>
   <p class="prof">Prof. Bruno Légora</p>
@@ -46,7 +46,6 @@
       <p class="titulo-lista">Compilação lenta de C++</p>
       <ul class="media">
         <li>Programas de milhões de linhas levavam dezenas de minutos para compilar, mesmo num cluster de compilação</li>
-        <li>O vilão era o <code>#include</code>: cada arquivo reabre e reprocessa os mesmos headers, e o custo cresce com o projeto</li>
       </ul>
       <p class="titulo-lista">Concorrência difícil</p>
       <ul class="media">
@@ -93,7 +92,7 @@
     <div>
       <p class="titulo-lista">Onde Go se destaca</p>
       <ul class="media">
-        <li>É de propósito geral e é mais usada em servidores de rede, APIs, infraestrutura de nuvem e ferramentas de linha de comando (veja os exemplos na parte 4)</li>
+        <li>É de propósito geral e é mais usada em servidores de rede, APIs, infraestrutura de nuvem e ferramentas de linha de comando</li>
       </ul>
       <p class="titulo-lista">Onde Go não se destaca</p>
       <ul class="media">
@@ -199,7 +198,7 @@ GOOS=darwin  GOARCH=arm64 go build   # binário para Mac M1</code></pre>
   <div class="cols">
     <div>
       <ul class="media">
-        <li>Principalmente estruturado e imperativo: funções, variáveis, sequência, seleção e repetição</li>
+        <li>Principalmente estruturado: funções, variáveis, sequência, seleção e repetição</li>
         <li>Tem tipos com métodos e interfaces, mas não tem classes nem herança</li>
       </ul>
 <pre><code class="language-go" data-trim>func media(notas []float64) float64 {
@@ -305,14 +304,10 @@ fmt.Println(C.sqrt(2))   // 1.4142135623730951</code></pre>
     <div>
       <ul class="media">
         <li>Linguagem open source desde 2009, com licença BSD</li>
-        <li>Compilador, gerenciador de dependências, formatador, testes e análise estática vêm juntos e de graça</li>
-        <li>Funciona em qualquer editor</li>
+        <li>Compilador, gerenciador de dependências, formatador, testes e análise estática vêm juntos</li>
+        <li><code>gopls</code> é o LSP (Language Server Protocol) desenvolvido pelo próprio time da linguagem, agnóstico de editor de texto</li>
+        <li>Fornece funcionalidades como saltar para definição, renomeação de variáveis, saltar entre símbolos, ver uso de funções e variáveis etc</li>
       </ul>
-    </div>
-    <div class="porque">
-      <p class="titulo-caixa">Os outros custos</p>
-      <p>A sintaxe pequena pode facilitar o aprendizado, mas concorrência e domínio da aplicação exigem formação. CPU e memória dependem da carga e das alocações.</p>
-      <p>A formatação padrão e a compatibilidade podem reduzir manutenção. O custo total também depende da equipe, das dependências e da operação; ferramentas gratuitas não tornam o projeto gratuito.</p>
     </div>
   </div>
 </section>
@@ -331,7 +326,7 @@ fmt.Println(C.sqrt(2))   // 1.4142135623730951</code></pre>
       <ul class="compacta">
         <li>O escopo é estático (léxico): dá para saber a qual declaração um nome se refere lendo o texto do programa, sem executar</li>
         <li>Blocos delimitados por chaves introduzem escopo e podem ocultar nomes externos; chaves de structs e literais não são blocos</li>
-        <li>Os níveis são universo, pacote, arquivo, função e bloco</li>
+        <li>Os níveis são universo, pacote, função e bloco</li>
       </ul>
 <pre><code class="language-go" data-trim>var x = "pacote"
 
@@ -348,9 +343,43 @@ func main() {
     <div class="porque">
       <p class="titulo-caixa">Por que estático?</p>
       <p>O compilador resolve cada nome antes de rodar o programa, então não há busca de variáveis em tempo de execução e quem lê o código sabe de onde cada nome vem.</p>
-      <p>É o mesmo modelo de C, Java e da maioria das linguagens atuais. Escopo dinâmico ficou restrito a casos como o Lisp antigo e variáveis de shell.</p>
+      <p>É o mesmo modelo de C, Java e da maioria das linguagens atuais.</p>
     </div>
   </div>
+</section>
+
+<section>
+  <h2>Funções e closures</h2>
+  <div class="cols">
+    <div>
+      <ul class="compacta">
+        <li><strong>Funções são de primeira classe</strong>: podem ser atribuídas a variáveis, passadas como argumentos e retornadas</li>
+        <li><strong>Funções aninhadas</strong>: usamos literais anônimos <code>func(...) { ... }</code>, que podem ser atribuídos a uma variável local</li>
+      </ul>
+      <br>
+      <div class="porque">
+        <p class="titulo-caixa">Ambiente de referenciamento: profundo</p>
+        <p>A closure mantém o ambiente léxico em que foi criada: o <code>base</code> usado por <code>somar</code> pertence a <code>criarSoma</code>, não ao chamador.</p>
+        <p>Ela captura a variável, não uma cópia congelada do valor.</p>
+      </div>
+    </div>
+    <div>
+<pre><code class="language-go" data-trim>type Operacao func(int) int
+
+func criarSoma(base int) Operacao {
+    somar := func(x int) int {
+        return base + x
+    }
+    return somar
+}
+
+somar := criarSoma(10)
+base := 100
+fmt.Println(somar(5), base) // 15 100</code></pre>
+      <p class="legenda">A função retornada continua usando o <code>base</code> da chamada <code>criarSoma(10)</code>, mesmo após seu retorno.</p>
+    </div>
+  </div>
+  <aside class="notes">Na terminologia de ambientes de referenciamento, profundo corresponde aqui ao ambiente léxico de criação da closure, em oposição ao ambiente do chamador. A especificação de Go descreve esse comportamento como escopo léxico e captura de variáveis compartilhadas: alterações posteriores na variável capturada são observadas pela closure. Declarações nomeadas da forma func nome(...) ficam no nível do pacote; dentro de funções usamos literais func(...) { ... }, opcionalmente atribuídos a variáveis. Tipos podem ser declarados em blocos locais, mas seus nomes não são valores que possam ser atribuídos ou passados como argumentos comuns. A interface reflect.Type fornece representações de tipos em tempo de execução: esses descritores são valores de primeira classe e podem ser armazenados, passados, retornados e usados para criar valores via reflexão. Por exemplo, t := reflect.TypeOf(0) é válido, mas t := int e var x t não são: um descritor não substitui um nome de tipo na sintaxe de declarações. Parâmetros de tipo de generics são um mecanismo de compilação. Fontes: go.dev/ref/spec#Function_literals, go.dev/doc/codewalk/functions/ e pkg.go.dev/reflect#Type.</aside>
 </section>
 
 <section>
@@ -359,7 +388,7 @@ func main() {
     <div>
       <ul class="compacta">
         <li>Go não tem o operador <code>?:</code></li>
-        <li>O <code>if</code> é um comando e não uma expressão: ele não devolve valor, então não dá para escrever <code>x := if ...</code></li>
+        <li>O <code>if</code> é um comando (statement) e não uma expressão: ele não devolve valor, então não dá para escrever <code>x := if ...</code></li>
         <li>Atribuição e <code>i++</code> também são comandos, então <code>if (x = 5)</code> e <code>y = i++</code> não compilam</li>
       </ul>
 <pre class="erro"><code class="language-text" data-trim>maior := a &gt; b ? a : b
@@ -384,17 +413,20 @@ if b &gt; a {
   <h2>Expressões e comandos: sem while</h2>
   <div class="cols">
     <div>
-<pre><code class="language-go" data-trim>for i := 0; i &lt; 10; i++ { }   // for clássico de C
+<pre><code class="language-go" data-trim>for i := 0; i &lt; 10; i++ { // for clássico de C
+}
 
-for n &gt; 0 {                   // o "while"
+for n &gt; 0 { // o "while"
     n--
 }
 
-for {                          // laço infinito
-    if pronto() { break }
+for { // laço infinito
+    if pronto() {
+        break
+    }
 }
 
-for i, nota := range notas {   // percorre coleções
+for i, nota := range notas { // percorre coleções
     fmt.Println(i, nota)
 }</code></pre>
       <p class="legenda">Um único comando de repetição cobre todos os casos. Também não existe <code>do-while</code>.</p>
@@ -441,10 +473,12 @@ const (
   <h2>Tipos compostos</h2>
   <div class="cols">
     <div>
-<pre><code class="language-go" data-trim>// array: tamanho fixo e faz parte do tipo
+<pre><code class="language-go" data-trim>// array: tamanho fixo
 notas := [3]float64{7, 8.5, 9}
 
-// slice: uma janela sobre um array, que cresce
+// slice: uma janela sobre um array
+v := notas[1:3] // v acessa do indice 1 até o 2 (3-1)
+// slice: array dinâmico
 nomes := []string{"ana"}
 nomes = append(nomes, "caio")
 
@@ -532,16 +566,20 @@ f = Fahrenheit(c*9/5 + 32)  // conversão explícita</code></pre>
       <ul class="compacta">
         <li>Não tem sobrecarga de funções nem redefinição de operadores</li>
         <li>Tem polimorfismo paramétrico desde a 1.18: funções e tipos com parâmetros de tipo sujeitos a restrições</li>
-        <li>Tem polimorfismo de inclusão pelas interfaces, com despacho dinâmico</li>
+        <li>Tem polimorfismo de inclusão pelas interfaces (não é a mesma coisa que herança)</li>
         <li>Conversões numéricas entre variáveis de tipos diferentes são explícitas</li>
       </ul>
+    </div>
+    <div>
 <pre><code class="language-go" data-trim>type Numero interface {
     ~int | ~int64 | ~float64
 }
 
 func Soma[T Numero](xs []T) T {
     var total T
-    for _, x := range xs { total += x }
+    for _, x := range xs {
+        total += x
+    }
     return total
 }
 
@@ -550,14 +588,7 @@ Soma([]float64{1.5, 2.5})  // 4
 
 type Pilha[T any] struct{ itens []T }</code></pre>
     </div>
-    <div class="porque">
-      <p class="titulo-caixa">Por que não tem sobrecarga?</p>
-      <blockquote>"Experience with other languages told us that having a variety of methods with the same name but different signatures was occasionally useful but that it could also be confusing and fragile in practice."<span class="fonte">Go FAQ</span></blockquote>
-      <p class="titulo-caixa">Por que os genéricos chegaram em 2022?</p>
-      <p>Durante anos o FAQ dizia que genéricos custam complexidade no sistema de tipos e no runtime, e que a equipe ainda não tinha achado um desenho que valesse esse custo. Várias propostas foram descartadas até a 1.18, em 2022.</p>
-    </div>
   </div>
-  <aside class="notes">A ausência de coerção numérica automática entre variáveis não exclui regras de atribuição para constantes sem tipo, interfaces e canais direcionais. Veja os exemplos e as ressalvas do slide de sistema de tipos.</aside>
 </section>
 
 <section>
@@ -567,7 +598,6 @@ type Pilha[T any] struct{ itens []T }</code></pre>
       <ul class="compacta">
         <li>A unidade de encapsulamento é o pacote e não a classe</li>
         <li>Só existem dois níveis de visibilidade, e quem decide é a primeira letra do nome: maiúscula é pública fora do pacote, minúscula é privada ao pacote</li>
-        <li>Não existe <code>protected</code> nem <code>friend</code></li>
         <li>Um pacote sob <code>internal/</code> só pode ser importado por código na árvore enraizada no diretório pai de <code>internal</code></li>
       </ul>
 <pre><code class="language-go" data-trim>package conta
@@ -583,7 +613,6 @@ func (c *Conta) Depositar(v float64) {
     </div>
     <div class="porque">
       <p class="titulo-caixa">Por que a letra maiúscula?</p>
-      <p>Em Java, a visibilidade depende dos modificadores da declaração. Em Go, a inicial maiúscula identifica nomes exportados: <code>c.Depositar</code> é exportado, <code>c.saldo</code> não.</p>
       <p>Encapsular por pacote em vez de por classe combina com a falta de classes: tipos do mesmo pacote enxergam os campos privados uns dos outros, como partes de um mesmo módulo.</p>
     </div>
   </div>
@@ -644,7 +673,7 @@ salvar(conexao, ana)    // manda pela rede</code></pre>
     <div class="porque">
       <p class="titulo-caixa">Por que interfaces tão pequenas?</p>
       <p>Essas interfaces exigem um método cada. A função <code>salvar</code> aceita qualquer <code>Writer</code>, seja para disco, terminal ou rede.</p>
-      <p>Um <code>gzip.Writer</code> escreve dados comprimidos em outro <code>Writer</code>; não é um <code>Reader</code>. A composição lembra os pipes do Unix, propostos por Doug McIlroy e implementados por Ken Thompson.</p>
+      <p>Um <code>gzip.Writer</code> escreve dados comprimidos em outro <code>Writer</code>. A composição lembra os pipes do Unix, propostos por Doug McIlroy e implementados por Ken Thompson.</p>
     </div>
   </div>
 </section>
@@ -687,21 +716,23 @@ zerar(s)     // s vira [0 2 3]</code></pre>
         <li>Cada uma começa com poucos KB de pilha, que cresce conforme precisa; a pilha de uma thread do sistema depende da plataforma e da configuração</li>
       </ul>
 <pre><code class="language-go" data-trim>func atender(conn net.Conn) {
-    defer conn.Close()
+    defer conn.Close() // defer é um LIFO quando a função encerra
     // lê e responde a um cliente
 }
 
 for {
     conn, err := servidor.Accept()
-    if err != nil { return } // encerra a função em caso de erro
+    if err != nil { // encerra a função em caso de erro
+        return
+    }
     go atender(conn)   // uma goroutine por cliente
 }</code></pre>
     </div>
     <div class="porque">
-      <p class="titulo-caixa">Por que não usar threads do sistema?</p>
-      <p>Threads do sistema têm custos que podem tornar inviável uma por cliente em grande escala. Pools e E/S assíncrona são alternativas tradicionais.</p>
-      <p>Desde Java 21, threads virtuais também permitem tarefas concorrentes leves, sem reservar uma thread do sistema por tarefa.</p>
+      <p class="titulo-caixa">Por que não usar processos ou threads do sistema?</p>
+      <p>Tanto processos e threads do sistema têm custos que podem tornar inviável uma por cliente em grande escala. Pools e E/S assíncrona são alternativas tradicionais.</p>
       <p>Com goroutines baratas, cada cliente ganha a sua e o código de <code>atender</code> é sequencial e simples. Quem cuida de encaixar tudo nos núcleos é o runtime.</p>
+      <p>Otimização de recursos em tarefas IO-Bound</p>
     </div>
   </div>
 </section>
@@ -891,6 +922,8 @@ defer f.Close()</code></pre>
   <div class="cols">
     <ul class="refs">
       <li>Go Specification e FAQ. <span>go.dev/ref/spec · go.dev/doc/faq</span></li>
+      <li>First-Class Functions in Go. <span>go.dev/doc/codewalk/functions/</span></li>
+      <li>Reflexão e reflect.Type. <span>pkg.go.dev/reflect#Type</span></li>
       <li>Effective Go. <span>go.dev/doc/effective_go</span></li>
       <li>Go 1 Compatibility. <span>go.dev/doc/go1compat</span></li>
       <li>Strings, bytes, runes and characters in Go. <span>go.dev/blog/strings</span></li>
@@ -916,9 +949,13 @@ defer f.Close()</code></pre>
 </section>
 
 <section class="capa">
-  <h1 class="menor">Obrigado</h1>
-  <p class="sub">Perguntas?</p>
-  <p class="autores">Paulo S. A. Mônico · Victor Rangel</p>
+  <div class="cols">
+    <div>
+      <h1 class="menor">Obrigado</h1>
+      <p class="sub">Perguntas?</p>
+      <p class="autores">Paulo S. A. Mônico · Victor Rangel</p>
+    </div>
+  </div>
 </section>
 
 </div>
