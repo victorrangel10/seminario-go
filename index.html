@@ -31,7 +31,6 @@
     <li><b>Avaliações teóricas</b><span>escopo, tipos e outros conceitos, e concorrência</span><em>~17 min</em></li>
     <li><b>Casos de uso</b><span>onde Go está sendo utilizado</span><em>~1 min</em></li>
   </ol>
-  <aside class="notes">Planejamento para 30 minutos: 3 minutos para abertura e histórico, 7 para critérios, 17 para avaliações teóricas, 1 para casos de uso e 1 para conclusão, com 1 minuto de margem. Dentro da parte teórica, reservar 9 minutos para concorrência: 3 para goroutines, 4 para canais e o exemplo de produtor-consumidor com select, 2 para a filosofia dos canais e sua relação com mutexes. Os outros conceitos teóricos ocupam 8 minutos, destacando o ponto principal de cada slide. Nos casos de uso, citar apenas os nomes de 2 ou 3 projetos. Não há bloco de perguntas no encerramento.</aside>
 </section>
 
 <!-- ===================== PARTE 1 ===================== -->
@@ -61,7 +60,6 @@
       <p class="fonte">PIKE, "Less is exponentially more", 2012 · PIKE, "Go at Google", 2012</p>
     </div>
   </div>
-  <aside class="notes">A resposta de Go para a compilação: sem headers, cada pacote declara explicitamente o que importa. Imports não usados são rejeitados; o import com identificador em branco é permitido para efeitos de inicialização. O grafo de imports precisa ser acíclico, mas não necessariamente pequeno. A resposta para concorrência vem na parte de concorrência: goroutines e canais.</aside>
 </section>
 
 <section>
@@ -78,7 +76,6 @@
     <div><b>2022</b><span>Go 1.18 traz genéricos</span></div>
     <div><b>hoje</b><span>duas versões por ano</span></div>
   </div>
-  <aside class="notes">A influência de C aparece na linguagem: Thompson criou B, que antecedeu C. Pike e Thompson também criaram UTF-8. O código-fonte de Go é UTF-8, mas strings podem conter quaisquer bytes, inclusive sequências inválidas nessa codificação.</aside>
 </section>
 
 <!-- ===================== PARTE 2 ===================== -->
@@ -243,7 +240,6 @@ GOOS=darwin  GOARCH=arm64 go build   # binário para Mac M1</code></pre>
       <p>Python, por comparação, quebrou boa parte do código existente na passagem da versão 2 para a 3.</p>
     </div>
   </div>
-  <aside class="notes">A promessa é de compatibilidade do código-fonte, não de pacotes binários nem de desempenho idêntico. Correções de bugs e segurança podem afetar código antigo. A versão no go.mod influencia a linguagem e padrões de algumas opções GODEBUG, mas não congela todo comportamento. A versão 1.18 também corrigiu casos antes aceitos pelo compilador.</aside>
 </section>
 
 <section>
@@ -380,7 +376,6 @@ fmt.Println(somar(5), base) // 15 100</code></pre>
       <p class="legenda">A função retornada continua usando o <code>base</code> da chamada <code>criarSoma(10)</code>, mesmo após seu retorno.</p>
     </div>
   </div>
-  <aside class="notes">Na terminologia de ambientes de referenciamento, profundo corresponde aqui ao ambiente léxico de criação da closure, em oposição ao ambiente do chamador. A especificação de Go descreve esse comportamento como escopo léxico e captura de variáveis compartilhadas: alterações posteriores na variável capturada são observadas pela closure. Declarações nomeadas da forma func nome(...) ficam no nível do pacote; dentro de funções usamos literais func(...) { ... }, opcionalmente atribuídos a variáveis. Tipos podem ser declarados em blocos locais, mas seus nomes não são valores que possam ser atribuídos ou passados como argumentos comuns. A interface reflect.Type fornece representações de tipos em tempo de execução: esses descritores são valores de primeira classe e podem ser armazenados, passados, retornados e usados para criar valores via reflexão. Por exemplo, t := reflect.TypeOf(0) é válido, mas t := int e var x t não são: um descritor não substitui um nome de tipo na sintaxe de declarações. Parâmetros de tipo de generics são um mecanismo de compilação. Fontes: go.dev/ref/spec#Function_literals, go.dev/doc/codewalk/functions/ e pkg.go.dev/reflect#Type.</aside>
 </section>
 
 <section>
@@ -557,7 +552,6 @@ f = Fahrenheit(c*9/5 + 32)  // conversão explícita</code></pre>
       <p>Nas interfaces a compatibilidade é estrutural, então qualquer tipo com os métodos certos serve, inclusive tipos escritos antes da interface existir.</p>
     </div>
   </div>
-  <aside class="notes">Não há conversão numérica implícita entre variáveis de tipos diferentes: int e int64, por exemplo, exigem conversão. Constantes sem tipo podem assumir um tipo compatível, como em var x float64 = 1. Atribuições a interfaces e de canais bidirecionais a direcionais também podem dispensar conversão explícita. Tipos compostos não definidos têm regras estruturais de identidade e atribuição.</aside>
 </section>
 
 <section>
@@ -772,7 +766,6 @@ case &lt;-time.After(time.Second):
 }</code></pre>
     </div>
   </div>
-  <aside class="notes">O produtor-consumidor inteiro, com fila limitada, sem mutex nem variável de condição: o canal com buffer já é o buffer limitado da Aula 09.</aside>
 </section>
 
 <section>
@@ -823,7 +816,6 @@ defer f.Close()</code></pre>
       <p>O preço é a verbosidade. Propostas para encurtar o <code>if err != nil</code> já foram feitas e rejeitadas pela comunidade.</p>
     </div>
   </div>
-  <aside class="notes">Falhas esperadas devem ser comunicadas como valores error. Panic não substitui esse tratamento. Recover precisa ser chamado diretamente por uma função executada por defer, na goroutine em panic; outra goroutine não consegue recuperá-lo. Sem recuperação, um panic encerra o programa.</aside>
 </section>
 
 <!-- ===================== PARTE 4 ===================== -->
@@ -880,7 +872,6 @@ defer f.Close()</code></pre>
       </ul>
     </div>
   </div>
-  <aside class="notes">Go é usado em muitos projetos do ecossistema cloud native, incluindo Kubernetes, Prometheus e etcd. Há também projetos em outras linguagens; essa lista ilustra usos, não mede a participação de Go no ecossistema.</aside>
 </section>
 
 <section>
@@ -904,7 +895,6 @@ defer f.Close()</code></pre>
       </ul>
     </div>
   </div>
-  <aside class="notes">Os exemplos destacam serviços de rede e ferramentas com distribuição simples. As empresas não usam exclusivamente Go, e relatos de adoção não garantem que todos os componentes atuais estejam nessa linguagem. Go também pode ser aplicado fora desses perfis.</aside>
 </section>
 
 <!-- ===================== FECHAMENTO ===================== -->
